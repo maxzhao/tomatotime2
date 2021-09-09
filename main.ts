@@ -6,10 +6,10 @@ input.onGesture(Gesture.ScreenDown, function () {
         }
     }
 })
-function 清空时间显示状态 (初始时间m: number) {
+function 清空时间显示状态 (初始时间ms: number) {
     上次绘制的时间m = 0
     当前闪烁状态01 = 0
-    当前倒计时时间ms = 初始时间m * 60000
+    当前倒计时时间ms = 初始时间ms
 }
 function 等待阶段结束 (阶段Str: string) {
     while (全局阶段str.compare(阶段Str) == 0) {
@@ -83,13 +83,10 @@ input.onButtonPressed(Button.A, function () {
 input.onGesture(Gesture.Shake, function () {
     if (全局阶段str.compare("工作倒计时") == 0) {
         设置当前阶段("等待响应")
-        if (番茄时间长度m - 当前倒计时时间ms / 60000 <= 5) {
-            basic.showString("Retry Or GiveUp?")
-        } else {
-            basic.showString("GiveUp?")
-        }
+        joystickbit.Vibration_Motor(100)
     } else if (全局阶段str.compare("等待响应") == 0) {
         led.stopAnimation()
+        清空时间显示状态(当前倒计时时间ms)
         恢复前一阶段()
     }
 })
@@ -196,7 +193,7 @@ basic.forever(function () {
     等待阶段结束("设置")
     while (全局阶段str.compare("所有任务结束") != 0) {
         if (全局阶段str.compare("放弃番茄钟") == 0) {
-            清空时间显示状态(番茄时间长度m)
+            清空时间显示状态(番茄时间长度m * 60000)
             设置当前阶段("工作倒计时")
         }
         music.playMelody("E D G F B A C5 B ", 120)
@@ -239,6 +236,12 @@ control.inBackground(function () {
                 } else if (局部阶段num == 1) {
                     显示符号时间(Math.ceil(当前倒计时时间ms / 60000), false)
                 }
+            }
+        } else if (全局阶段str.compare("等待响应") == 0) {
+            if (番茄时间长度m - 当前倒计时时间ms / 60000 <= 5) {
+                basic.showString("Retry Or GiveUp?")
+            } else {
+                basic.showString("GiveUp?")
             }
         }
         basic.pause(50)
