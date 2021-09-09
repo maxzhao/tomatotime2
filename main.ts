@@ -2,12 +2,14 @@ input.onGesture(Gesture.ScreenDown, function () {
     if (全局阶段str.compare("工作倒计时") == 0) {
         if (局部阶段num == 0) {
             局部阶段num = 1
+            joystickbit.Vibration_Motor(100)
         }
     }
 })
-function 清空时间显示状态 () {
+function 清空时间显示状态 (初始时间m: number) {
     上次绘制的时间m = 0
     当前闪烁状态01 = 0
+    当前倒计时时间ms = 初始时间m * 60000
 }
 function 等待阶段结束 (阶段Str: string) {
     while (全局阶段str.compare(阶段Str) == 0) {
@@ -127,7 +129,7 @@ input.onButtonPressed(Button.B, function () {
     } else if (全局阶段str.compare("设置") == 0) {
         局部阶段num += 1
         if (局部阶段num > 2) {
-            设置当前阶段("工作倒计时")
+            设置当前阶段("放弃番茄钟")
         }
     } else if (全局阶段str.compare("等待响应") == 0) {
         led.stopAnimation()
@@ -156,7 +158,7 @@ function 初始化状态 () {
     // 注：所有以“倒计时”结尾的阶段，都会进入倒计时状态
     全局阶段str = "问候语"
     局部阶段num = 0
-    番茄时间长度m = 1
+    番茄时间长度m = 25
     短休息长度m = 3
     长休息长度m = 15
     上次绘制的时间m = -1
@@ -167,6 +169,7 @@ input.onGesture(Gesture.ScreenUp, function () {
     if (全局阶段str.compare("工作倒计时") == 0) {
         if (局部阶段num == 1) {
             局部阶段num = 0
+            joystickbit.Vibration_Motor(100)
         }
     }
 })
@@ -174,17 +177,18 @@ let 番茄钟累积num = 0
 let 前一局部阶段num = 0
 let 前一全局阶段str = ""
 let 当前时段起始时间ms = 0
-let 当前倒计时时间ms = 0
 let 长休息长度m = 0
 let 短休息长度m = 0
 let 番茄时间长度m = 0
 let 绘图索引Y = 0
 let 临时值 = 0
 let 绘图索引X = 0
+let 当前倒计时时间ms = 0
 let 当前闪烁状态01 = 0
 let 上次绘制的时间m = 0
 let 局部阶段num = 0
 let 全局阶段str = ""
+joystickbit.initJoystickBit()
 初始化状态()
 basic.showString("Tomato Clock")
 设置当前阶段("设置")
@@ -192,12 +196,14 @@ basic.forever(function () {
     等待阶段结束("设置")
     while (全局阶段str.compare("所有任务结束") != 0) {
         if (全局阶段str.compare("放弃番茄钟") == 0) {
-            清空时间显示状态()
+            清空时间显示状态(番茄时间长度m)
             设置当前阶段("工作倒计时")
         }
+        music.playMelody("E D G F B A C5 B ", 120)
         进入倒计时("工作倒计时", 番茄时间长度m)
         if (全局阶段str.compare("倒计时结束") == 0) {
             番茄钟累积num += 1
+            music.playMelody("G B A G C5 B A B ", 120)
             if (番茄钟累积num % 4 == 0) {
                 设置当前阶段("长时间倒计时")
                 进入倒计时("长时间倒计时", 长休息长度m)
@@ -207,6 +213,7 @@ basic.forever(function () {
             }
         }
     }
+    music.startMelody(music.builtInMelody(Melodies.PowerUp), MelodyOptions.OnceInBackground)
     while (true) {
         basic.showString(" U Win:")
         basic.showString("" + (番茄钟累积num))
